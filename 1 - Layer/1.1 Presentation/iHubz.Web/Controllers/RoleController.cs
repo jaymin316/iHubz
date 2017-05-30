@@ -88,6 +88,7 @@ namespace iHubz.Web.Controllers
 
         public ActionResult Cancel()
         {
+            // Cancel and go back to roles screen
             return RedirectToAction("Index");
         }
     }
