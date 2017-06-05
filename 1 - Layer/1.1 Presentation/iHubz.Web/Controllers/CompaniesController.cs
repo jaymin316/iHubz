@@ -70,6 +70,53 @@ namespace iHubz.Web.Controllers
             return View(companiesDataTable);
         }
 
+        [Authorize(Roles = "Admin")]
+        public ActionResult SearchCompanies(string sortOrder, string CurrentSort, int? page, string searchName)
+        {
+            var pageSize = CompanyConstants.PAGE_SIZE;
+            var pageIndex = page.HasValue ? Convert.ToInt32(page) : 1;
+            var allCompanies = _companyAppService.GetAllCompaniesWithStates();
+
+            ViewBag.CurrentSort = sortOrder;
+
+            sortOrder = String.IsNullOrEmpty(sortOrder) ? CompanyConstants.DEFAULT_VIEW_COMPANY_SORT_ORDER : sortOrder;
+
+            // Apply search filters
+            if (!String.IsNullOrEmpty(searchName))
+            {
+                allCompanies = allCompanies.Where(c => c.CompanyName.Contains(searchName)).ToList();
+            }
+
+            IPagedList<Companies> companiesDataTable = null;
+            switch (sortOrder)
+            {
+                case "CompanyName":
+                    companiesDataTable = sortOrder.Equals(CurrentSort) ?
+                        allCompanies.OrderByDescending(c => c.CompanyName).ToPagedList(pageIndex, pageSize) :
+                        allCompanies.OrderBy(c => c.CompanyName).ToPagedList(pageIndex, pageSize);
+                    break;
+                case "Website":
+                    companiesDataTable = sortOrder.Equals(CurrentSort) ?
+                        allCompanies.OrderByDescending(c => c.Website).ToPagedList(pageIndex, pageSize) :
+                        allCompanies.OrderBy(c => c.Website).ToPagedList(pageIndex, pageSize);
+                    break;
+                case "City":
+                    companiesDataTable = sortOrder.Equals(CurrentSort) ?
+                        allCompanies.OrderByDescending(c => c.City).ToPagedList(pageIndex, pageSize) :
+                        allCompanies.OrderBy(c => c.City).ToPagedList(pageIndex, pageSize);
+                    break;
+                case "State":
+                    companiesDataTable = sortOrder.Equals(CurrentSort) ?
+                        allCompanies.OrderByDescending(c => c.State.StateName).ToPagedList(pageIndex, pageSize) :
+                        allCompanies.OrderBy(c => c.State.StateName).ToPagedList(pageIndex, pageSize);
+                    break;
+                case "Default":
+                    companiesDataTable = allCompanies.OrderBy(c => c.CompanyName).ToPagedList(pageIndex, pageSize);
+                    break;
+            }
+
+            return View(companiesDataTable);
+        }
         
         /// <summary>
         /// GET.. called when clicking on ManageCompnay.
@@ -121,7 +168,7 @@ namespace iHubz.Web.Controllers
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("OtherExceptions", "Unknown error - " + ex.Message);
+                ModelState.AddModelError("OtherExceptions", @"Unknown error - " + ex.Message);
             }
 
             if (success)

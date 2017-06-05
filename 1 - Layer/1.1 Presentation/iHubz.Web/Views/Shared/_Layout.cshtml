@@ -19,13 +19,24 @@
                 </button>
                 @*@Html.ActionLink("Application name", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })*@
             </div>
-            <div class="navbar-collapse collapse">
+            <div class="collapse navbar-collapse">
                 <ul class="nav navbar-nav">
-                    @*<li>@Html.ActionLink("Home", "Index", "Home")</li>
-                    <li>@Html.ActionLink("About", "About", "Home")</li>
-                    <li>@Html.ActionLink("Contact", "Contact", "Home")</li>*@
-                    @if(Context.User.Identity.IsAuthenticated && User.IsInRole("Admin")) {
-                        <li>@Html.ActionLink("Company List", "ViewCompanies", "Companies")</li>
+                    @if (Context.User.Identity.IsAuthenticated && User.IsInRole("Admin"))
+                    {
+                        <li>
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Companies<b class="caret"></b></a>
+                            <ul class="dropdown-menu">
+                                <li><a href="#">@Html.ActionLink("Registered Companies", "ViewCompanies", "Companies")</a></li>
+                                <li><a href="#">@Html.ActionLink("Search Companies", "SearchCompanies", "Companies")</a></li>
+                            </ul>
+                        </li>
+                        <li>
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Users<b class="caret"></b></a>
+                            <ul class="dropdown-menu">
+                                <li><a href="#">@Html.ActionLink("Manage Roles and Users", "Index", "User")</a></li>
+                                <li><a href="#">@Html.ActionLink("Register New User", "Register", "Account", routeValues: null, htmlAttributes: new { id = "registerLink" })</a></li>
+                            </ul>
+                        </li>
                     }
                 </ul>
                 @Html.Partial("_LoginPartial")

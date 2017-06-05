@@ -1,0 +1,59 @@
+﻿@using PagedList.Mvc
+@model PagedList.IPagedList<iHubz.Domain.MainModule.CompanyEntities.Companies>
+@{
+    ViewBag.Title = "Search Companies";
+}
+
+<h2 style="text-align: center; text-decoration: underline">Search Companies</h2>
+
+<div id="divSearch" style="margin: 20px 10px 0 10px">
+    @using (Html.BeginForm("SearchCompanies", "Companies", FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
+    {
+        <p>
+            Name: @Html.TextBox("SearchName")<br />
+            <input type="submit" value="Search" />
+        </p>
+    }
+</div>
+
+<div id="divSearchResult" style="margin: 20px 10px 0 10px">
+    <table id="tblCompanies" style="width: 100% !IMPORTANT; border-collapse: collapse;">
+        <tr>
+            <th style="border: 2px solid black; text-align: center; width: 40%">
+                @Html.ActionLink("Company Name", "SearchCompanies", new { sortOrder = "CompanyName", CurrentSort = ViewBag.CurrentSort })
+            </th>
+            <th style="border: 2px solid black; text-align: center; width: 30%">
+                @Html.ActionLink("Website", "SearchCompanies", new { sortOrder = "Website", CurrentSort = ViewBag.CurrentSort })
+            </th>
+            <th style="border: 2px solid black; text-align: center; width: 20%">
+                @Html.ActionLink("City", "SearchCompanies", new { sortOrder = "City", CurrentSort = ViewBag.CurrentSort })
+            </th>
+            <th style="border: 2px solid black; text-align: center; width: 10%">
+                @Html.ActionLink("State", "SearchCompanies", new { sortOrder = "State", CurrentSort = ViewBag.CurrentSort })
+            </th>
+        </tr>
+        @foreach (var item in Model)
+        {
+            @Html.HiddenFor(modelItem => item.CompanyId)
+            <tr>
+                <td style="border: 2px solid black; text-align: center; word-wrap: break-word;">
+                    @Html.DisplayFor(modelItem => item.CompanyName)
+                </td>
+                <td style="border: 2px solid black; text-align: center; word-wrap: break-word;">
+                    @Html.DisplayFor(modelItem => item.Website)
+                </td>
+                <td style="border: 2px solid black; text-align: center; word-wrap: break-word;">
+                    @Html.DisplayFor(modelItem => item.City)
+                </td>
+                <td style="border: 2px solid black; text-align: center; word-wrap: break-word;">
+                    @Html.DisplayFor(modelItem => item.State.StateName)
+                </td>
+            </tr>
+        }
+    </table>
+    <br />
+    <div id='Paging' style="text-align: center">
+        Page @(Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber) of @Model.PageCount
+        @Html.PagedListPager(Model, page => Url.Action("SearchCompanies", new { page }), PagedListRenderOptions.Classic)
+    </div>
+</div>
