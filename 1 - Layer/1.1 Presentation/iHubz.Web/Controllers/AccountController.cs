@@ -83,8 +83,8 @@ namespace iHubz.Web.Controllers
             {
                 case SignInStatus.Success:
                     //return RedirectToLocal(returnUrl);
-                    //return RedirectToAction("ViewCompanies", "Companies");
-                    return RedirectToAction("Index", "User");
+                    return RedirectToAction("ViewCompanies", "Companies");
+                    //return RedirectToAction("Index", "User");
                 case SignInStatus.LockedOut:
                     return View("Lockout");
                 case SignInStatus.RequiresVerification:
