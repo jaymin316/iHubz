@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Web.Mvc;
 using iHubz.Application.MainModule.Company;
@@ -84,7 +85,8 @@ namespace iHubz.Web.Controllers
             // Apply search filters
             if (!String.IsNullOrEmpty(searchName))
             {
-                allCompanies = allCompanies.Where(c => c.CompanyName.Contains(searchName)).ToList();
+                allCompanies = allCompanies.Where(c => CultureInfo.CurrentCulture.CompareInfo.IndexOf(
+                    c.CompanyName, searchName, CompareOptions.IgnoreCase) >= 0).ToList();
             }
 
             IPagedList<Companies> companiesDataTable = null;

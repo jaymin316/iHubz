@@ -9,12 +9,30 @@
 <div id="divSearch" style="margin: 20px 10px 0 10px">
     @using (Html.BeginForm("SearchCompanies", "Companies", FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
     {
-        <p>
-            Name: @Html.TextBox("SearchName")<br />
-            <input type="submit" value="Search" />
-        </p>
+        <table id="tblSearch" style="width: 100% !IMPORTANT; border-collapse: collapse;">
+            <tr>
+                <td style="width: 15%; border: none; text-align: center; word-wrap: break-word;">
+                    Company Name: 
+                </td>
+                <td style="width: 85%; border: none; text-align: left; word-wrap: break-word;">
+                    @Html.TextBox("SearchName", null, new {style="width:100%"})
+                </td>
+            </tr>
+            <tr height=10px></tr>
+            <tr>
+                <td style="width: 15%"></td>
+                <td style="border: none; text-align: left;">
+                    <input type="submit" class="btn btn-danger" value="Search"/>
+                    <input type="button" id="btnClear" class="btn btn-danger" value="Clear" onclick="@("window.location.href='" + @Url.Action("SearchCompanies", "Companies") + "'");"/>
+                </td>
+            </tr>
+        </table>
     }
 </div>
+
+<hr/>
+<h4 style="text-align: left; color: olivedrab">See below for Search Results</h4>
+<hr/>
 
 <div id="divSearchResult" style="margin: 20px 10px 0 10px">
     <table id="tblCompanies" style="width: 100% !IMPORTANT; border-collapse: collapse;">
