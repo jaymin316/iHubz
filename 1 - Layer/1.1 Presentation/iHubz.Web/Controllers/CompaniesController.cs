@@ -25,56 +25,58 @@ namespace iHubz.Web.Controllers
         }
 
         /// <summary>
-        /// Called when clicking on View company (Company option from the menu)
+        /// Ajax from SearchCompanies view calls this function 
+        /// </summary>
+        /// <returns>return json object for States dropdown</returns>
+        public JsonResult GetStates()
+        {
+            // Get list of states from database
+            var statesList = _stateAppService.GetAllStates().ToList();
+            // Add a default state entry
+            statesList.Insert(0, new States {StateId= 0, StateName = "--- Please Select ---"}); 
+
+            // Convert statesList to JSON and return to view
+            var resultData = statesList.Select(s => new { Value = s.StateId, Text = s.StateName });
+            return Json(new { result = resultData }, JsonRequestBehavior.AllowGet);
+        }
+
+        /// <summary>
+        /// Called when clicking on View company (option from Companies menu)
         /// Displays a data-table of all existing companies from the database
         /// </summary>
         /// <returns></returns>
         [Authorize(Roles = "Admin")]
         public ActionResult ViewCompanies(string sortOrder, string CurrentSort, int? page)
         {
-            var pageSize = CompanyConstants.PAGE_SIZE;
             var pageIndex = page.HasValue ? Convert.ToInt32(page) : 1;
             var allCompanies = _companyAppService.GetAllCompaniesWithStates().ToList();
 
             ViewBag.CurrentSort = sortOrder;
-
             sortOrder = String.IsNullOrEmpty(sortOrder) ? CompanyConstants.DEFAULT_VIEW_COMPANY_SORT_ORDER : sortOrder;
 
-            IPagedList<Companies> companiesDataTable = null;
-            switch (sortOrder)
-            {
-                case "CompanyName":
-                    companiesDataTable = sortOrder.Equals(CurrentSort) ?
-                        allCompanies.OrderByDescending(c => c.CompanyName).ToPagedList(pageIndex, pageSize) :
-                        allCompanies.OrderBy(c => c.CompanyName).ToPagedList(pageIndex, pageSize);
-                    break;
-                case "Website":
-                    companiesDataTable = sortOrder.Equals(CurrentSort) ?
-                        allCompanies.OrderByDescending(c => c.Website).ToPagedList(pageIndex, pageSize) :
-                        allCompanies.OrderBy(c => c.Website).ToPagedList(pageIndex, pageSize);
-                    break;
-                case "City":
-                    companiesDataTable = sortOrder.Equals(CurrentSort) ?
-                        allCompanies.OrderByDescending(c => c.City).ToPagedList(pageIndex, pageSize) :
-                        allCompanies.OrderBy(c => c.City).ToPagedList(pageIndex, pageSize);
-                    break;
-                case "State":
-                    companiesDataTable = sortOrder.Equals(CurrentSort) ?
-                        allCompanies.OrderByDescending(c => c.State.StateName).ToPagedList(pageIndex, pageSize) :
-                        allCompanies.OrderBy(c => c.State.StateName).ToPagedList(pageIndex, pageSize);
-                    break;
-                case "Default":
-                    companiesDataTable = allCompanies.OrderBy(c => c.CompanyName).ToPagedList(pageIndex, pageSize);
-                    break;
-            }
+            // Apply paging to the data table
+            var companiesDataTable = CreatePagedCompaniesDataTable(sortOrder, CurrentSort, allCompanies, pageIndex);
 
             return View(companiesDataTable);
         }
 
+        /// <summary>
+        /// Called when clicking on Search company (option from Companies menu)
+        /// </summary>
+        /// <param name="sortOrder">Sort order: Ascending or Descending</param>
+        /// <param name="CurrentSort">Column to sort on</param>
+        /// <param name="page">Page number</param>
+        /// <param name="txtSearchName">Company name to search on</param>
+        /// <param name="txtSearchWebsite">Website to search on</param>
+        /// <param name="txtSearchCity">City to search on</param>
+        /// <param name="txtSearchDistrict">District to search on</param>
+        /// <param name="txtSearchPincode">Pincode to search on</param>
+        /// <param name="drpSearchState">State to search on</param>
+        /// <returns></returns>
         [Authorize(Roles = "Admin")]
-        public ActionResult SearchCompanies(string sortOrder, string CurrentSort, int? page, string searchName)
+        public ActionResult SearchCompanies(string sortOrder, string CurrentSort, int? page, string txtSearchName,
+            string txtSearchWebsite, string txtSearchCity, string txtSearchDistrict, string txtSearchPincode, string drpSearchState)
         {
-            var pageSize = CompanyConstants.PAGE_SIZE;
             var pageIndex = page.HasValue ? Convert.ToInt32(page) : 1;
             var allCompanies = _companyAppService.GetAllCompaniesWithStates();
 
@@ -82,44 +84,98 @@ namespace iHubz.Web.Controllers
 
             sortOrder = String.IsNullOrEmpty(sortOrder) ? CompanyConstants.DEFAULT_VIEW_COMPANY_SORT_ORDER : sortOrder;
 
+            var stateId = Convert.ToInt32(drpSearchState);
             // Apply search filters
-            if (!String.IsNullOrEmpty(searchName))
-            {
-                allCompanies = allCompanies.Where(c => CultureInfo.CurrentCulture.CompareInfo.IndexOf(
-                    c.CompanyName, searchName, CompareOptions.IgnoreCase) >= 0).ToList();
-            }
+            allCompanies = FilterAllCompanies(txtSearchName, txtSearchWebsite, txtSearchCity, txtSearchDistrict, 
+                txtSearchPincode, stateId, allCompanies);
 
-            IPagedList<Companies> companiesDataTable = null;
+            // Apply paging to the resulting data table
+            var companiesDataTable = CreatePagedCompaniesDataTable(sortOrder, CurrentSort, allCompanies, pageIndex);
+           
+            return View(companiesDataTable);
+        }
+
+        /// <summary>
+        /// Pagination of data table so that it is more readable 
+        /// </summary>
+        /// <param name="sortOrder">Sort order: Ascending or Descending</param>
+        /// <param name="currentSort">Column to sort on</param>
+        /// <param name="allCompanies">List of companies on which we will apply paging</param>
+        /// <param name="pageIndex">Current page number</param>
+        /// <returns></returns>
+        private static IPagedList<Companies> CreatePagedCompaniesDataTable(string sortOrder, string currentSort,
+            IEnumerable<Companies> allCompanies, int pageIndex)
+        {
+            var pageSize = CompanyConstants.PAGE_SIZE;
+            IPagedList<Companies> dataTable = null;
+
             switch (sortOrder)
             {
                 case "CompanyName":
-                    companiesDataTable = sortOrder.Equals(CurrentSort) ?
-                        allCompanies.OrderByDescending(c => c.CompanyName).ToPagedList(pageIndex, pageSize) :
-                        allCompanies.OrderBy(c => c.CompanyName).ToPagedList(pageIndex, pageSize);
+                    dataTable = sortOrder.Equals(currentSort)
+                        ? allCompanies.OrderByDescending(c => c.CompanyName).ToPagedList(pageIndex, pageSize)
+                        : allCompanies.OrderBy(c => c.CompanyName).ToPagedList(pageIndex, pageSize);
                     break;
                 case "Website":
-                    companiesDataTable = sortOrder.Equals(CurrentSort) ?
-                        allCompanies.OrderByDescending(c => c.Website).ToPagedList(pageIndex, pageSize) :
-                        allCompanies.OrderBy(c => c.Website).ToPagedList(pageIndex, pageSize);
+                    dataTable = sortOrder.Equals(currentSort)
+                        ? allCompanies.OrderByDescending(c => c.Website).ToPagedList(pageIndex, pageSize)
+                        : allCompanies.OrderBy(c => c.Website).ToPagedList(pageIndex, pageSize);
                     break;
                 case "City":
-                    companiesDataTable = sortOrder.Equals(CurrentSort) ?
-                        allCompanies.OrderByDescending(c => c.City).ToPagedList(pageIndex, pageSize) :
-                        allCompanies.OrderBy(c => c.City).ToPagedList(pageIndex, pageSize);
+                    dataTable = sortOrder.Equals(currentSort)
+                        ? allCompanies.OrderByDescending(c => c.City).ToPagedList(pageIndex, pageSize)
+                        : allCompanies.OrderBy(c => c.City).ToPagedList(pageIndex, pageSize);
                     break;
                 case "State":
-                    companiesDataTable = sortOrder.Equals(CurrentSort) ?
-                        allCompanies.OrderByDescending(c => c.State.StateName).ToPagedList(pageIndex, pageSize) :
-                        allCompanies.OrderBy(c => c.State.StateName).ToPagedList(pageIndex, pageSize);
+                    dataTable = sortOrder.Equals(currentSort)
+                        ? allCompanies.OrderByDescending(c => c.State.StateName).ToPagedList(pageIndex, pageSize)
+                        : allCompanies.OrderBy(c => c.State.StateName).ToPagedList(pageIndex, pageSize);
                     break;
                 case "Default":
-                    companiesDataTable = allCompanies.OrderBy(c => c.CompanyName).ToPagedList(pageIndex, pageSize);
+                    dataTable = allCompanies.OrderBy(c => c.CompanyName).ToPagedList(pageIndex, pageSize);
                     break;
             }
-
-            return View(companiesDataTable);
+            return dataTable;
         }
-        
+
+        /// <summary>
+        /// Filters the companies list based on user entered search criteria
+        /// </summary>
+        /// <param name="txtSearchName">Company name to search</param>
+        /// <param name="txtSearchWebsite">Website to search</param>
+        /// <param name="txtSearchCity">City to search</param>
+        /// <param name="txtSearchDistrict">District to search</param>
+        /// <param name="txtSearchPincode">Pincode to search</param>
+        /// <param name="stateId">StateId to search</param>
+        /// <param name="allCompanies">List of companies on which we will apply search filters</param>
+        /// <returns></returns>
+        private static IEnumerable<Companies> FilterAllCompanies(string txtSearchName, string txtSearchWebsite,
+            string txtSearchCity, string txtSearchDistrict, string txtSearchPincode, int stateId,
+            IEnumerable<Companies> allCompanies)
+        {
+            allCompanies = allCompanies.Where(c =>
+                    (String.IsNullOrEmpty(txtSearchName) || CultureInfo.CurrentCulture.CompareInfo.IndexOf(
+                         c.CompanyName, txtSearchName, CompareOptions.IgnoreCase) >= 0)
+                    &&
+                    (String.IsNullOrEmpty(txtSearchWebsite) || CultureInfo.CurrentCulture.CompareInfo.IndexOf(
+                         c.Website, txtSearchWebsite, CompareOptions.IgnoreCase) >= 0)
+                    &&
+                    (String.IsNullOrEmpty(txtSearchCity) || CultureInfo.CurrentCulture.CompareInfo.IndexOf(
+                         c.City, txtSearchCity, CompareOptions.IgnoreCase) >= 0)
+                    &&
+                    (String.IsNullOrEmpty(txtSearchDistrict) || CultureInfo.CurrentCulture.CompareInfo.IndexOf(
+                         c.District, txtSearchDistrict, CompareOptions.IgnoreCase) >= 0)
+                    &&
+                    (String.IsNullOrEmpty(txtSearchPincode) || CultureInfo.CurrentCulture.CompareInfo.IndexOf(
+                         c.Pincode, txtSearchPincode, CompareOptions.IgnoreCase) >= 0)
+                    &&
+                    (stateId == 0 || c.StateId == stateId)
+                ).ToList()
+                .OrderBy(c => c.CompanyName);
+
+            return allCompanies;
+        }
+
         /// <summary>
         /// GET.. called when clicking on ManageCompnay.
         /// Displays the ManageCompany view so that we can insert data into the textboxes to save/update

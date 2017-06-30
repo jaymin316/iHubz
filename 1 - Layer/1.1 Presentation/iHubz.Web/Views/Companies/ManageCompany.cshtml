@@ -7,9 +7,8 @@
 {
     @Html.AntiForgeryToken()
 
-    <hr />
     <h2>@ViewBag.Title</h2>
-    <hr />
+    <br />
     @Html.ValidationSummary(true, "Company cannot be registered. Please correct the error messages below and try again", new { @class = "text-danger" })
     @Html.ValidationMessage("OtherExceptions", new { @class = "text-danger" })
     @Html.HiddenFor(m => m.CompanyId)

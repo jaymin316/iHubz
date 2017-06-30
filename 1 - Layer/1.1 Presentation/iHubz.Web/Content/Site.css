@@ -22,3 +22,32 @@ select,
 textarea {
     max-width: 280px;
 }
+
+h2 {
+    left: 100px;
+    font: normal normal normal 20px/1 Helvetica, arial, sans-serif;
+    border-bottom: 2px solid #000;
+    background: #428bca;
+    color: #fff;
+    display: inline-block;
+    padding: 3px 15px;
+    margin: 20px 10px 0 10px;
+}
+h2:after {
+    left: 70px;
+    display: block;
+    position: absolute;
+    width: 90%;
+    height: 3px;
+    margin-top: 2px;
+    margin-bottom: 50px;
+    content: " ";
+    background: #428bca;
+}
+
+h4 {
+    color: #428bca;
+    border-top: 1px dotted #428bca;
+    border-bottom: 1px dotted #428bca;
+    padding: 3px;
+}
