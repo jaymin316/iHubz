@@ -45,7 +45,7 @@ namespace iHubz.Web.Controllers
         /// Displays a data-table of all existing companies from the database
         /// </summary>
         /// <returns></returns>
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Data Entry")]
         public ActionResult ViewCompanies(string sortOrder, string CurrentSort, int? page)
         {
             var pageIndex = page.HasValue ? Convert.ToInt32(page) : 1;
@@ -73,7 +73,7 @@ namespace iHubz.Web.Controllers
         /// <param name="txtSearchPincode">Pincode to search on</param>
         /// <param name="drpSearchState">State to search on</param>
         /// <returns></returns>
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Data Entry")]
         public ActionResult SearchCompanies(string sortOrder, string CurrentSort, int? page, string txtSearchName,
             string txtSearchWebsite, string txtSearchCity, string txtSearchDistrict, string txtSearchPincode, string drpSearchState)
         {
