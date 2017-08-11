@@ -30,6 +30,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Aspose.Cells">
+      <HintPath>..\..\..\..\2 - Library\Aspose.Cells.dll</HintPath>
+    </Reference>
     <Reference Include="AutoMapper">
       <HintPath>..\2 - Library\AutoMapper.dll</HintPath>
     </Reference>
@@ -49,6 +52,11 @@
     <Compile Include="Adapter\Automapper\AutomapperTypeAdapter.cs" />
     <Compile Include="Adapter\Automapper\AutomapperTypeAdapterFactory.cs" />
     <Compile Include="Defaults\ApplicationDefaults.cs" />
+    <Compile Include="Excel\AsposeCells\AsposeExcelCell.cs" />
+    <Compile Include="Excel\AsposeCells\AsposeExcelManager.cs" />
+    <Compile Include="Excel\AsposeCells\AsposeExcelManagerFactory.cs" />
+    <Compile Include="Excel\AsposeCells\AsposeExcelWorkbook.cs" />
+    <Compile Include="Excel\AsposeCells\AsposeExcelWorksheet.cs" />
     <Compile Include="Excel\DTO\CopySheetDto.cs" />
     <Compile Include="Excel\ExcelCellType.cs" />
     <Compile Include="Excel\ExcelHelper.cs" />

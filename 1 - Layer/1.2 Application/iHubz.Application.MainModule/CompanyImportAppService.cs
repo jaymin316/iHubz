@@ -53,7 +53,7 @@ namespace iHubz.Application.MainModule
 
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 result = false;
             }

@@ -11,7 +11,7 @@
             public const int HEADER_ROWINDEX = 1;
             public const int DETAILS_ROWINDEX = 2;
             // Column indexes
-            public const int COMPANY_NAME_COLINDEX = 0;
+            public const int COMPANY_NAME_COLINDEX = 2;
             public const int ADDRESS_LINE_1_COLINDEX = 1;
             public const int ADDRESS_LINE_2_COLINDEX = 2;
         }

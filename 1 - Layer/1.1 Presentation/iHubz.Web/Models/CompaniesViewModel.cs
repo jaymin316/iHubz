@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Web;
 using System.Web.Mvc;
 using iHubz.Domain.MainModule.CompanyEntities;
 
@@ -78,5 +79,23 @@ namespace iHubz.Web.Models
         public DateTime CreatedDate { get; set; }
         public string CreatedBy { get; set; }
 
+    }
+
+    public class ImportCompaniesModel
+    {
+        [Required]
+        [Display(Name = "File Name")]
+        public String FileName { get; set; }
+
+        public byte[] FileData { get; set; }
+
+        [Required]
+        [Display(Name = "Category")]
+        public Int32 CategoryId { get; set; }
+
+        [Required]
+        [DataType(DataType.Upload)]
+        [Display(Name = "Choose File")]
+        public HttpPostedFileBase FileUpload { get; set; }
     }
 }

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.40629.0
+# Visual Studio 15
+VisualStudioVersion = 15.0.26430.6
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "iHubz.Web", "1 - Layer\1.1 Presentation\iHubz.Web\iHubz.Web.csproj", "{1D16681F-80B2-4A8E-8FB6-DAEF3C214699}"
 EndProject
@@ -23,6 +23,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "iHubz.Infrastructure.CrossC
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "2 - Library", "2 - Library", "{56D56BF5-FDC7-4741-92B3-278D2AC504A2}"
 	ProjectSection(SolutionItems) = preProject
+		2 - Library\Aspose.Cells.dll = 2 - Library\Aspose.Cells.dll
+		2 - Library\Aspose.Cells.lic = 2 - Library\Aspose.Cells.lic
 		2 - Library\Microsoft.Practices.EnterpriseLibrary.Caching.dll = 2 - Library\Microsoft.Practices.EnterpriseLibrary.Caching.dll
 		2 - Library\Microsoft.Practices.EnterpriseLibrary.Common.dll = 2 - Library\Microsoft.Practices.EnterpriseLibrary.Common.dll
 		2 - Library\Microsoft.Practices.EnterpriseLibrary.Data.dll = 2 - Library\Microsoft.Practices.EnterpriseLibrary.Data.dll

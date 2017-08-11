@@ -1,6 +1,8 @@
 ﻿using System;
 using iHubz.Infrastructure.CrossCutting.Adapter;
 using iHubz.Infrastructure.CrossCutting.Dependency;
+using iHubz.Infrastructure.CrossCutting.Excel;
+using iHubz.Infrastructure.CrossCutting.Excel.AsposeCells;
 
 namespace iHubz.Web.Extensions
 {
@@ -65,7 +67,7 @@ namespace iHubz.Web.Extensions
             var typeAdapterFactory = _currentContainer.Resolve<ITypeAdapterFactory>();
             TypeAdapterFactory.SetCurrent(typeAdapterFactory);
 
-            //ExcelManagerFactory.SetCurrent(new AsposeExcelManagerFactory());
+            ExcelManagerFactory.SetCurrent(new AsposeExcelManagerFactory());
             //PdfManagerFactory.SetCurrent(new AsposePdfManagerFactory());
             //ArchiveManagerFactory.SetCurrent(new ZipArchiveManagerFactory());
         }

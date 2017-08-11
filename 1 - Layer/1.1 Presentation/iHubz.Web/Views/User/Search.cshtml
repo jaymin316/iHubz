@@ -1,0 +1,72 @@
+﻿@*@using PagedList.Mvc
+@model PagedList.IPagedList<iHubz.Web.Models.ApplicationUser>
+@{
+    ViewBag.Title = "Search";
+}
+
+<h2>Search Users</h2>
+
+<div id="divSearchUsers" style="margin: 20px 10px 0 10px">
+    
+    @using (Html.BeginForm("Search", "Account", FormMethod.Post, new {@class = "form-horizontal", role = "form"}))
+    {
+        <table id="tblSearchUsers" style="width: 100% !IMPORTANT; border-collapse: collapse;">
+            <tr>
+                <td style="width: 15%; border: none; text-align: center; word-wrap: break-word;">
+                    First name:
+                </td>
+                <td style="width: 35%; border: none; text-align: left; word-wrap: break-word;">
+                    @Html.TextBox("txtSearchFirstName", null, new {style = "width:100%"})
+                </td>
+                <td style="width: 15%; border: none; text-align: center; word-wrap: break-word;">
+                    Last name:
+                </td>
+                <td style="width: 35%; border: none; text-align: left; word-wrap: break-word;">
+                    @Html.TextBox("txtSearchLastName", null, new {style = "width:100%"})
+                </td>
+            </tr>
+            <tr height=10px></tr>
+            <tr>
+                <td style="width: 15%"></td>
+                <td style="border: none; text-align: left;" colspan="3">
+                    <input type="submit" class="btn btn-danger" value="Search"/>
+                    <input type="button" id="btnClear" class="btn btn-danger" value="Clear" onclick="@("window.location.href='" + @Url.Action("Search", "Account") + "'");"/>
+                </td>
+            </tr>
+        </table>
+    }
+</div>
+
+<br />
+<h4>Users</h4>
+<br />
+
+
+<div id="divSearchResult" style="margin: 20px 10px 0 10px">
+    <table id="tblUsers" style="width: 100% !IMPORTANT; border-collapse: collapse;">
+        <tr>
+            <th style="border: 2px solid black; text-align: center; width: 25%">
+                @Html.ActionLink("First Name", "Search", new { sortOrder = "FirstName", CurrentSort = ViewBag.CurrentSort })
+            </th>
+            <th style="border: 2px solid black; text-align: center; width: 25%">
+                @Html.ActionLink("Last Name", "Search", new { sortOrder = "LastName", CurrentSort = ViewBag.CurrentSort })
+            </th>
+        </tr>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td style="border: 2px solid black; text-align: center; word-wrap: break-word;">
+                    @Html.DisplayFor(modelItem => item.LogonId)
+                </td>
+                <td style="border: 2px solid black; text-align: center; word-wrap: break-word;">
+                    @Html.DisplayFor(modelItem => item.FirstName)
+                </td>
+            </tr>
+        }
+    </table>
+    <br />
+    <div id='Paging' style="text-align: center">
+        Page @(Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber) of @Model.PageCount
+        @Html.PagedListPager(Model, page => Url.Action("Search", new { page }), PagedListRenderOptions.Classic)
+    </div>
+</div>*@

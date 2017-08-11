@@ -2,12 +2,15 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Web;
 using System.Web.Mvc;
+using iHubz.Application.MainModule;
 using iHubz.Application.MainModule.Company;
 using iHubz.Application.MainModule.State;
 using iHubz.Domain.MainModule.CompanyEntities;
 using iHubz.Domain.MainModule.ReferenceData;
 using iHubz.Infrastructure.CrossCutting.Extensions;
+using iHubz.Infrastructure.CrossCutting.Settings;
 using iHubz.Web.Models;
 using PagedList;
 
@@ -17,11 +20,14 @@ namespace iHubz.Web.Controllers
     {
         private readonly ICompanyAppService _companyAppService;
         private readonly IStateAppService _stateAppService;
+        private readonly ICompanyImportAppService _companyImportAppService;
 
-        public CompaniesController(ICompanyAppService companyAppService, IStateAppService stateAppService)
+        public CompaniesController(ICompanyAppService companyAppService, IStateAppService stateAppService, 
+            ICompanyImportAppService companyImportAppService)
         {
             _companyAppService = companyAppService;
             _stateAppService = stateAppService;
+            _companyImportAppService = companyImportAppService;
         }
 
         /// <summary>
@@ -246,6 +252,75 @@ namespace iHubz.Web.Controllers
             _companyAppService.DeleteCompany(companyId);
             return RedirectToAction("ViewCompanies");
         }
+
+        // GET: Import Companies page
+        public ActionResult Import()
+        {
+            var model = new ImportCompaniesModel();
+            return View(model);
+        }
+
+        /// <summary>
+        /// Import companies via excel upload - button click
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult PerformImport()
+        {
+            var isImported = false;
+            string message = null;
+            var username = LoggedOnUser;
+
+            try
+            {
+                if (Request.Files.Count > 0)
+                {
+                    HttpPostedFileBase uploadedFile = Request.Files[0];
+
+                    if (uploadedFile != null && uploadedFile.ContentLength != 0)
+                    {
+                        // check that the file size isn't greater than the application variable
+                        int maxSize = SettingsHelper.MaxFileUploadSize != null
+                            ? SettingsHelper.MaxFileUploadSize.Value
+                            : 500;
+
+                        if (uploadedFile.ContentLength <= (1024 * 1024 * maxSize))
+                        {
+                            Byte[] fileData = new Byte[uploadedFile.ContentLength];
+
+                            uploadedFile.InputStream.Read(fileData, 0, uploadedFile.ContentLength);
+                            string actualFileName = uploadedFile.FileName;
+
+                            // save to the database
+                            isImported = _companyImportAppService.PerformImport(actualFileName, fileData, username);
+
+                            if (isImported)
+                                message = "File successfully imported";
+                        }
+                        else
+                            message = "File too large";
+                    }
+                    else
+                    {
+                        message = "File empty";
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                message = "Import failed - " + ex.Message;
+            }
+
+            // Add errors to model, if file import failed
+            if (!isImported)
+            {
+                ModelState.AddModelError("", message);
+            }
+
+            return View();
+        }
+
 
         #region Private methods
         private void SetStates(CompaniesViewModel model)

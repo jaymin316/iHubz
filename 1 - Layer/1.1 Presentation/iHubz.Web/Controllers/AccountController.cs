@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
-using System.Web.Security;
 using iHubz.Web.Models;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
@@ -53,6 +54,11 @@ namespace iHubz.Web.Controllers
             {
                 _userManager = value;
             }
+        }
+
+        private IEnumerable<ApplicationUser> GetAllUsers()
+        {
+            return UserManager.Users.ToList();
         }
 
         //
@@ -149,6 +155,23 @@ namespace iHubz.Web.Controllers
             return View();
         }
 
+        public ActionResult ManageUser(RegisterViewModel model)
+        {
+            ViewBag.Name = new SelectList(_context.Roles.Where(u => !u.Name.Contains("Admin"))
+                .ToList(), "Name", "Name");
+
+            // TODO: Show user's existing data role as SELECTED in the roles dropdown
+            // TODO: Show user's existing password
+
+            // TODO: On editing user details, hide password boxes and retain existing password.
+            // If user wants to change password, he has to use the change password link
+
+            model.Password = "temp";
+            model.ConfirmPassword = "temp";
+
+            return View("Register", model);
+        }
+
         public ActionResult Cancel()
         {
             return RedirectToAction("Register");
@@ -163,41 +186,139 @@ namespace iHubz.Web.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = new ApplicationUser
-                {
-                    UserName = model.LogonId, 
-                    Title = model.Title,
-                    FirstName = model.FirstName,
-                    MiddleName = model.MiddleName,
-                    LastName = model.LastName,
-                    Email = model.Email,
-                    BirthDate = model.BirthDate,
-                    LogonId = model.LogonId,
-                    SystemUser = model.SystemUser
-                };
-                var result = await UserManager.CreateAsync(user, model.Password);
-                if (result.Succeeded)
-                {
-                    await SignInManager.SignInAsync(user, isPersistent:false, rememberBrowser:false);
-                    
-                    // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=320771
-                    // Send an email with this link
-                    // string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
-                    // var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
-                    // await UserManager.SendEmailAsync(user.Id, "Confirm your account", "Please confirm your account by clicking <a href=\"" + callbackUrl + "\">here</a>");
-                    await this.UserManager.AddToRoleAsync(user.Id, model.UserRoles);   
+                IdentityResult result;
+                var user = GetAllUsers().First(u => u.LogonId == model.LogonId);
 
-                    return RedirectToAction("Index", "Home");
+                if (user != null)
+                {
+                    //TODO: Google on how to display and save ApplicationUser password using UpdateManager.Update
+
+                    //savedUser.SecurityStamp = updatedUser.SecurityStamp;
+                    //savedUser.PasswordHash = updatedUser.PasswordHash;
+                    //savedUser.UserName = model.UserName;
+                    //savedUser.Id = updatedUser.Id;
+                    user.FirstName = model.FirstName;
+                    user.LastName = model.LastName;
+                    user.LogonId = model.LogonId;
+                    user.BirthDate = model.BirthDate;
+                    user.Email = model.Email;
+                    user.MiddleName = model.MiddleName;
+                    user.Title = model.Title;
+
+                    result = await UserManager.UpdateAsync(user);
+
+                    if (result.Succeeded)
+                    {
+                        return RedirectToAction("Users");
+                    }
                 }
-                
+                else
+                {
+                    user = new ApplicationUser
+                    {
+                        UserName = model.LogonId,
+                        Title = model.Title,
+                        FirstName = model.FirstName,
+                        MiddleName = model.MiddleName,
+                        LastName = model.LastName,
+                        Email = model.Email,
+                        BirthDate = model.BirthDate,
+                        LogonId = model.LogonId,
+                        SystemUser = model.SystemUser
+                    };
+
+                    result = await UserManager.CreateAsync(user, model.Password);
+
+                    if (result.Succeeded)
+                    {
+                        await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
+
+                        // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=320771
+                        // Send an email with this link
+                        // string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
+                        // var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
+                        // await UserManager.SendEmailAsync(user.Id, "Confirm your account", "Please confirm your account by clicking <a href=\"" + callbackUrl + "\">here</a>");
+                        await this.UserManager.AddToRoleAsync(user.Id, model.UserRoles);
+
+                        return RedirectToAction("Index", "Home");
+                    }
+                }
+
                 ViewBag.Name = new SelectList(_context.Roles.Where(u => !u.Name.Contains("Admin"))
                                   .ToList(), "Name", "Name"); 
                 AddErrors(result);
+            }
+            else
+            {
+                ViewBag.Name = new SelectList(_context.Roles.Where(u => !u.Name.Contains("Admin"))
+                    .ToList(), "Name", "Name");
             }
 
             // If we got this far, something failed, redisplay form
             return View(model);
         }
+
+        public ActionResult Users()
+        {
+            return View(GetAllUsers());
+        }
+
+        public ActionResult UpdateUser(ApplicationUser user)
+        {
+            RegisterViewModel model = new RegisterViewModel()
+            {
+                // TODO: Retain user's existing password and roles
+                FirstName = user.FirstName,
+                LogonId = user.LogonId,
+                LastName = user.LastName,
+                //UserRoles = user.Roles.ToString(),
+                BirthDate = user.BirthDate,
+                Email = user.Email,
+                Title = user.Title,
+                MiddleName = user.MiddleName
+            };
+            return RedirectToAction("ManageUser", user);
+        }
+
+        //public ActionResult Search(string sortOrder, string CurrentSort, int? page)
+        //{
+        //    var pageIndex = page.HasValue ? Convert.ToInt32(page) : 1;
+        //    var allUsers = UserManager.Users.ToList();
+        //    //ViewBag.Name = new SelectList(_context.Roles.Where(u => !u.Name.Contains("Admin"))
+        //    //    .ToList(), "Name", "Name");
+
+
+        //    ViewBag.CurrentSort = sortOrder;
+        //    sortOrder = String.IsNullOrEmpty(sortOrder) ? "FirstName" : sortOrder;
+
+        //    // Apply paging to the data table
+        //    var usersDataTable = CreatePagedUsersDataTable(sortOrder, CurrentSort, allUsers, pageIndex);
+
+        //    return View(usersDataTable);
+        //}
+
+        //private static IPagedList<ApplicationUser> CreatePagedUsersDataTable(string sortOrder, string currentSort,
+        //    IEnumerable<ApplicationUser> allUsers, int pageIndex)
+        //{
+        //    //var pageSize = CompanyConstants.PAGE_SIZE;
+        //    var pageSize = 10;
+
+        //    IPagedList<ApplicationUser> dataTable = null;
+
+        //    switch (sortOrder)
+        //    {
+        //        case "FirstName":
+        //            dataTable = sortOrder.Equals(currentSort)
+        //                ? allUsers.OrderByDescending(u => u.FirstName).ToPagedList(pageIndex, pageSize)
+        //                : allUsers.OrderBy(u => u.FirstName).ToPagedList(pageIndex, pageSize);
+        //            break;
+        //        case "Default":
+        //            dataTable = allUsers.OrderBy(u => u.FirstName).ToPagedList(pageIndex, pageSize);
+        //            break;
+        //    }
+        //    return dataTable;
+        //}
+
 
         //
         // GET: /Account/ConfirmEmail

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using iHubz.Application.MainModule;
 using iHubz.Application.MainModule.Company;
 using iHubz.Application.MainModule.State;
 using iHubz.Domain.Core;
@@ -97,6 +98,7 @@ namespace iHubz.Infrastructure.CrossCutting.Dependency.Unity
 
             container.RegisterType<ICompanyAppService, CompanyAppService>(new TransientLifetimeManager());
             container.RegisterType<IStateAppService, StateAppService>(new TransientLifetimeManager());
+            container.RegisterType<ICompanyImportAppService, CompanyImportAppService>(new TransientLifetimeManager());
 
             #endregion
         }
