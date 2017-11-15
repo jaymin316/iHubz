@@ -1,8 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
 using iHubz.Domain.MainModule.CompanyEntities;
 using iHubz.Domain.MainModule.Repositories;
 using iHubz.Infrastructure.Data.Core;
+using iHubz.Infrastructure.Data.MainModule.DataSet;
 using MainModuleUnitOfWork = iHubz.Infrastructure.Data.MainModule.UnitOfWork.MainModuleUnitOfWork;
 
 namespace iHubz.Infrastructure.Data.MainModule.Repositories
@@ -39,6 +43,18 @@ namespace iHubz.Infrastructure.Data.MainModule.Repositories
                 }
             }
             return false;
+        }
+
+        public void SaveImportedCompanies(IEnumerable<Companies> allCompanyChanges, string username)
+        {
+            /* Convert updated entities into data tables */
+            var allCompaniesChangeSetData = ChangeSetDataSet.ConvertToDataTable(allCompanyChanges);
+
+            /* Call stored procedure to do bulk insert/update of data */ 
+            DbContext.ExecuteStoredProcNonQuery("usp_CompaniesSave",
+                new SqlParameter("@Username", username),
+                CreateSqlParameter("AllCompaniesData", SqlDbType.Structured, allCompaniesChangeSetData)
+            );
         }
     }
 }

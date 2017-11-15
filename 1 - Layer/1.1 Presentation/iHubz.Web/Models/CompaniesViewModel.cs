@@ -84,16 +84,6 @@ namespace iHubz.Web.Models
     public class ImportCompaniesModel
     {
         [Required]
-        [Display(Name = "File Name")]
-        public String FileName { get; set; }
-
-        public byte[] FileData { get; set; }
-
-        [Required]
-        [Display(Name = "Category")]
-        public Int32 CategoryId { get; set; }
-
-        [Required]
         [DataType(DataType.Upload)]
         [Display(Name = "Choose File")]
         public HttpPostedFileBase FileUpload { get; set; }
